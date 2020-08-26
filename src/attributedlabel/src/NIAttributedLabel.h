@@ -35,8 +35,21 @@ extern "C" {
  */
 CGSize NISizeOfAttributedStringConstrainedToSize(NSAttributedString* attributedString, CGSize size, NSInteger numberOfLines);
 
+/**
+ * By default, the size calculation (sizeThatFits:) for a multiline string (w/ newline chars) with
+ * numberOfLines == 1 returns a height that would fit all lines instead of just the first line.
+ * The intent was to return a width that can fit the entire string in one line, but the
+ * implementation didn't account for presence of newline chars in the string.
+ *
+ * When enabled, it fixes such size calculation to return the size for just the first line as
+ * expected. This matches the UILabel size calculation behavior as well.
+ *
+ * This is disabled by default due to existing clients that may depend on the legacy behavior.
+ */
+void NIAttributedLabelEnableSingleLineSizeCalculationFix(void);
+
 #if defined __cplusplus
-};
+}
 #endif
 
 // Vertical alignments for NIAttributedLabel.
@@ -45,6 +58,12 @@ typedef enum {
   NIVerticalTextAlignmentMiddle,
   NIVerticalTextAlignmentBottom,
 } NIVerticalTextAlignment;
+
+typedef NS_ENUM(NSInteger, NILinkOrdering) {
+  NILinkOrderingFirst = 0, // Sort the links in the text as the first accessible elements
+  NILinkOrderingOriginal, // Won't do any sorting of the links, they will appear in the order in which they occur in the original text
+  NILinkOrderingLast, // Sort the links in the text as the last accessible elements
+};
 
 extern NSString* const NIAttributedLabelLinkAttributeName; // Value is an NSTextCheckingResult.
 
@@ -83,10 +102,23 @@ extern NSString* const NIAttributedLabelLinkAttributeName; // Value is an NSText
 @property (nonatomic) NSTextCheckingType  dataDetectorTypes;  // Default: NSTextCheckingTypeLink
 @property (nonatomic) BOOL                deferLinkDetection; // Default: NO
 
+/**
+ * Determines whether each link's accessibilityLabel will be determined by the label's text.
+ * Defaults to YES.
+ *
+ * If enabled, each link will dynamically determine its accessibilityLabel based on the text to
+ * which the link is attached.
+ *
+ * If disabled, each link will be set to either self.accessibilityLabel or
+ * self.accessibilityAttributedLabel.
+ */
+@property(nonatomic) BOOL shouldCalculateAccessibilityLabelPerLink;
+
 - (void)addLink:(NSURL *)urlLink range:(NSRange)range;
 - (void)removeAllExplicitLinks; // Removes all links that were added by addLink:range:. Does not remove autodetected links.
 
 @property (nonatomic, strong) UIColor*      linkColor;                      // Default: self.tintColor (iOS 7) or [UIColor blueColor] (iOS 6)
+@property (nonatomic, strong) UIColor*      strikethroughColor;             // Default: foreground color.
 @property (nonatomic, strong) UIColor*      highlightedLinkBackgroundColor; // Default: [UIColor colorWithWhite:0.5 alpha:0.5
 @property (nonatomic)         BOOL          linksHaveUnderlines;            // Default: NO
 @property (nonatomic, copy)   NSDictionary* attributesForLinks;             // Default: nil
@@ -103,6 +135,33 @@ extern NSString* const NIAttributedLabelLinkAttributeName; // Value is an NSText
 
 @property (nonatomic, copy) NSString* tailTruncationString;
 
+@property (nonatomic) BOOL shouldSortLinksLast DEPRECATED_MSG_ATTRIBUTE("Use linkOrdering instead. Besides sorting links as first or last accessible elements, we are introducing a new way which sorts links in their original order and breaks the text into fragments when necessary."); // Sort the links in the text as the last elements in accessible elements. Default: NO
+
+@property (nonatomic) NILinkOrdering linkOrdering; // Define how to sort links in the text. Default: NILinkOrderFirst
+
+/**
+ * Configures if the label's accessibility elements should remember their last valid accessibility
+ * containers (Default: @c NO)
+ *
+ * An accessibility element in a @c NIAttributedLabel considers its accessibility container to be
+ * valid if it knows its frame inside the container. While an element has a valid container, it can
+ * dynamically compute its accessibility properties (e.g. @c accessibilityFrame) upon request to
+ * ensure such properties are correct even if the label's position on screen changes.
+ *
+ * UIKit sometimes spontaneously changes the accessibility containers of all accessibility elements
+ * in a @c NIAttributedLabel to another view. When this happens, the elements no longer know their
+ * frames inside the new container, so they must fall back to static accessibility properties that
+ * were computed on init. Those values only remain correct as long as their label's position on
+ * screen remains unchanged since they were computed. If the label is embedded inside a scroll view,
+ * those values will quickly become stale.
+ *
+ * Setting this property to @c YES allows @c NIAttributedLabel's accessibility elements to remember
+ * their last valid containers. When asked for their accessibility properties, if they no longer
+ * have a valid container, they will attempt to use their last valid containers for dynamic
+ * computations if possible before defaulting to fallback static values.
+ */
+@property(nonatomic) BOOL accessibleElementsRememberLastValidContainer;
+
 - (void)setFont:(UIFont *)font            range:(NSRange)range;
 - (void)setStrokeColor:(UIColor *)color   range:(NSRange)range;
 - (void)setStrokeWidth:(CGFloat)width     range:(NSRange)range;
@@ -115,6 +174,8 @@ extern NSString* const NIAttributedLabelLinkAttributeName; // Value is an NSText
 - (void)insertImage:(UIImage *)image atIndex:(NSInteger)index margins:(UIEdgeInsets)margins verticalTextAlignment:(NIVerticalTextAlignment)verticalTextAlignment;
 
 - (void)invalidateAccessibleElements;
+
+- (NSTextCheckingResult *)linkAtPoint:(CGPoint)point;
 
 @property (nonatomic, weak) IBOutlet id<NIAttributedLabelDelegate> delegate;
 @end
@@ -140,9 +201,26 @@ extern NSString* const NIAttributedLabelLinkAttributeName; // Value is an NSText
 - (void)attributedLabel:(NIAttributedLabel *)attributedLabel didSelectTextCheckingResult:(NSTextCheckingResult *)result atPoint:(CGPoint)point;
 
 /**
+ * Informs the receiver that a data detector result has been long pressed.
+ *
+ * If this method is implemented by the receiver then
+ * -attributedLabel:shouldPresentActionSheet:withTextCheckingResult:atPoint: will not be called
+ * and no action sheet will be presented when long pressing a data detector result.
+ *
+ * @param attributedLabel An attributed label informing the receiver of the selection.
+ * @param result The data detector result that was long pressed.
+ * @param point The point within @c attributedLabel where the result was long pressed.
+ */
+- (void)attributedLabel:(NIAttributedLabel *)attributedLabel didLongPressTextCheckingResult:(NSTextCheckingResult *)result atPoint:(CGPoint)point;
+
+/**
  * Asks the receiver whether an action sheet should be displayed at the given point.
  *
- * If this method is not implemented by the receiver then @c actionSheet will always be displayed.
+ * If -attributedLabel:didLongPressTextCheckingResult:atPoint: is implemented by the receiver, this
+ * delegate method will not be called and no action sheet will be displayed. If neither
+ * -attributedLabel:didLongPressTextCheckingResult:atPoint: nor
+ * -attributedLabel:shouldPresentActionSheet:withTextCheckingResult:atPoint: are implemented by the
+ * receiver, @c actionSheet will always be displayed.
  *
  * @c actionSheet will be populated with actions that match the data type that was selected. For
  * example, a link will have the actions "Open in Safari" and "Copy URL". A phone number will have
@@ -156,7 +234,7 @@ extern NSString* const NIAttributedLabelLinkAttributeName; // Value is an NSText
  * @returns YES if @c actionSheet should be displayed. NO if @c actionSheet should not be
  *               displayed.
  */
-- (BOOL)attributedLabel:(NIAttributedLabel *)attributedLabel shouldPresentActionSheet:(UIActionSheet *)actionSheet withTextCheckingResult:(NSTextCheckingResult *)result atPoint:(CGPoint)point;
+- (BOOL)attributedLabel:(NIAttributedLabel *)attributedLabel shouldPresentActionSheet:(UIActionSheet *)actionSheet withTextCheckingResult:(NSTextCheckingResult *)result atPoint:(CGPoint)point NS_DEPRECATED_IOS(2_0, 8_3, "UIActionSheet is deprecated. Use -attributedLabel:didLongPressTextCheckingResult:atPoint: and UIAlertController with a preferredStyle of UIAlertControllerStyleActionSheet instead");
 
 @end
 
@@ -381,7 +459,7 @@ extern NSString* const NIAttributedLabelLinkAttributeName; // Value is an NSText
  * @fn NIAttributedLabel::setTextColor:range:
  */
 
-/** 
+/**
  * Sets the font for text in a given range.
  *
  * @fn NIAttributedLabel::setFont:range:

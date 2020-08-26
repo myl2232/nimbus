@@ -1,5 +1,6 @@
 //
 // Copyright 2011-2014 NimbusKit
+// Originally created by Roger Chapman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,19 +15,22 @@
 // limitations under the License.
 //
 
-#import "NIMutableTableViewModel.h"
-#import "NITableViewModel+Private.h"
+#import "NIAttributedLabel.h"
 
-@interface NIMutableTableViewModel (Private)
+/**
+ * A category exposing methods that are exercised by unit tests.
+ */
+@interface NIAttributedLabel (Testing)
 
-@property (nonatomic, strong) NSMutableArray* sections; // Array of NITableViewModelSection
-@property (nonatomic, strong) NSMutableArray* sectionIndexTitles;
-@property (nonatomic, strong) NSMutableDictionary* sectionPrefixToSectionIndex;
+/**
+ * The text checking result for the link that is currently being touched or nil if no link is
+ * being touched.
+ */
+@property (nonatomic, strong) NSTextCheckingResult *touchedLink;
 
-@end
-
-@interface NITableViewModelSection (Mutable)
-
-- (NSMutableArray *)mutableRows;
+/**
+ * An internal method that is called when the user long presses on a link.
+ */
+- (void)_longPressTimerDidFire:(NSTimer *)timer;
 
 @end

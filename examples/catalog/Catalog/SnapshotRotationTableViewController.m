@@ -144,7 +144,8 @@
   // in loadView, except we're adding the table view to self.view rather than assigning it to
   // self.view.
   self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
-  self.tableView.autoresizingMask = UIViewAutoresizingFlexibleDimensions;
+  self.tableView.autoresizingMask =
+      (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
   [self.view addSubview:self.tableView];
 
   self.tableView.delegate = [self.actions forwardingTo:self];
@@ -169,8 +170,8 @@
   }
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
-  return NIIsSupportedOrientation(toInterfaceOrientation);
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+  return NIIsPad() ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskAllButUpsideDown;
 }
 
 // The following three methods MUST all be forwarded to the snapshot rotation object in order for

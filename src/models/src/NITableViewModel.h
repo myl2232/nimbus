@@ -17,10 +17,11 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#import "NIActions.h"  /* for NIActionsDataSource */
 #import "NIPreprocessorMacros.h" /* for weak */
 
 #if NS_BLOCKS_AVAILABLE
-typedef UITableViewCell* (^NITableViewModelCellForIndexPathBlock)(UITableView* tableView, NSIndexPath* indexPath, id object);
+typedef UITableViewCell * _Nonnull (^NITableViewModelCellForIndexPathBlock)(UITableView* _Nonnull tableView, NSIndexPath* _Nonnull indexPath, id _Nonnull object);
 #endif // #if NS_BLOCKS_AVAILABLE
 
 @protocol NITableViewModelDelegate;
@@ -48,22 +49,20 @@ typedef enum {
  *
  * @ingroup TableViewModels
  */
-@interface NITableViewModel : NSObject <UITableViewDataSource>
+@interface NITableViewModel : NSObject <NIActionsDataSource, UITableViewDataSource>
 
 #pragma mark Creating Table View Models
 
 // Designated initializer.
-- (id)initWithDelegate:(id<NITableViewModelDelegate>)delegate;
-- (id)initWithListArray:(NSArray *)sectionedArray delegate:(id<NITableViewModelDelegate>)delegate;
+- (nonnull id)initWithDelegate:(nullable id<NITableViewModelDelegate>)delegate NS_DESIGNATED_INITIALIZER;
+- (nonnull id)initWithListArray:(nonnull NSArray *)sectionedArray delegate:(nullable id<NITableViewModelDelegate>)delegate;
 // Each NSString in the array starts a new section. Any other object is a new row (with exception of certain model-specific objects).
-- (id)initWithSectionedArray:(NSArray *)sectionedArray delegate:(id<NITableViewModelDelegate>)delegate;
+- (nonnull id)initWithSectionedArray:(nonnull NSArray *)sectionedArray delegate:(nullable id<NITableViewModelDelegate>)delegate;
 
 #pragma mark Accessing Objects
 
-- (id)objectAtIndexPath:(NSIndexPath *)indexPath;
-
 // This method is not appropriate for performance critical codepaths.
-- (NSIndexPath *)indexPathForObject:(id)object;
+- (nullable NSIndexPath *)indexPathForObject:(nonnull id)object;
 
 #pragma mark Configuration
 
@@ -76,12 +75,12 @@ typedef enum {
 
 #pragma mark Creating Table View Cells
 
-@property (nonatomic, weak) id<NITableViewModelDelegate> delegate;
+@property (nonatomic, weak, nullable) id<NITableViewModelDelegate> delegate;
 
 #if NS_BLOCKS_AVAILABLE
 // If both the delegate and this block are provided, cells returned by this block will be used
 // and the delegate will not be called.
-@property (nonatomic, copy) NITableViewModelCellForIndexPathBlock createCellBlock;
+@property (nonatomic, copy, nullable) NITableViewModelCellForIndexPathBlock createCellBlock;
 #endif // #if NS_BLOCKS_AVAILABLE
 
 @end
@@ -100,10 +99,30 @@ typedef enum {
  *
  * The implementation of this method will generally use object to customize the cell.
  */
-- (UITableViewCell *)tableViewModel: (NITableViewModel *)tableViewModel
-                   cellForTableView: (UITableView *)tableView
-                        atIndexPath: (NSIndexPath *)indexPath
-                         withObject: (id)object;
+- (nonnull UITableViewCell *)tableViewModel: (nonnull NITableViewModel *)tableViewModel
+                           cellForTableView: (nonnull UITableView *)tableView
+                                atIndexPath: (nonnull NSIndexPath *)indexPath
+                                 withObject: (nonnull id)object;
+
+@end
+
+/**
+ * An object used in sectioned arrays to denote a section header title.
+ *
+ * Meant to be used in a sectioned array for NITableViewModel.
+ *
+ * <h3>Example</h3>
+ *
+ * @code
+ *  [NITableViewModelHeader headerWithTitle:@"Header"]
+ * @endcode
+ */
+@interface NITableViewModelHeader : NSObject
+
++ (nonnull instancetype)headerWithTitle:(nonnull NSString *)title;
+- (nonnull instancetype)initWithTitle:(nonnull NSString *)title;
+
+@property (nonatomic, copy, nullable) NSString* title;
 
 @end
 
@@ -120,10 +139,10 @@ typedef enum {
  */
 @interface NITableViewModelFooter : NSObject
 
-+ (id)footerWithTitle:(NSString *)title;
-- (id)initWithTitle:(NSString *)title;
++ (nonnull id)footerWithTitle:(nonnull NSString *)title;
+- (nonnull id)initWithTitle:(nonnull NSString *)title;
 
-@property (nonatomic, copy) NSString* title;
+@property (nonatomic, copy, nullable) NSString* title;
 
 @end
 
@@ -179,7 +198,29 @@ typedef enum {
  *  [NSDictionary dictionaryWithObject:@"Row 3" forKey:@"title"],
  *  [NITableViewModelFooter footerWithTitle:@"Footer"],
  *  nil];
- * [[NIStaticTableViewModel alloc] initWithSectionedArray:contents delegate:self];
+ * [[NITableViewModel alloc] initWithSectionedArray:contents delegate:self];
+ * @endcode
+ *
+ * <h3>Example using NITableViewModelHeader</h3>
+ *
+ * When a NITableViewModelHeader is present in the array then strings will no longer be
+ * treated as section headers; NITableViewModelHeader instances will be used as section
+ * headers instead. This enables strings to be used as simple objects in a sectioned
+ * array, similar to how they can be used in a list array.
+ *
+ * @code
+ * NSArray* contents =
+ * [NSArray arrayWithObjects:
+ *  [NITableViewModelHeader headerWithTitle:@"Section 1"],
+ *  @"Row 1",
+ *  @"Row 2",
+ *  [NITableViewModelHeader headerWithTitle:@"Section 2"],
+ *  // This section is empty.
+ *  [NITableViewModelHeader headerWithTitle:@"Section 3"],
+ *  @"Row 3",
+ *  [NITableViewModelFooter footerWithTitle:@"Footer"],
+ *  nil];
+ * [[NITableViewModel alloc] initWithSectionedArray:contents delegate:self];
  * @endcode
  *
  * @fn NITableViewModel::initWithSectionedArray:delegate:

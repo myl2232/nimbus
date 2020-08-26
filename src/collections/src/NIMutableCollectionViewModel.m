@@ -121,6 +121,20 @@
   return section;
 }
 
+- (void)_setSectionsWithArray:(NSArray *)sectionsArray {
+  if ([sectionsArray isKindOfClass:[NSMutableArray class]]) {
+    self.sections = (NSMutableArray *)sectionsArray;
+  } else {
+    self.sections = [sectionsArray mutableCopy];
+  }
+}
+
+- (NICollectionViewModelSection *)_sectionFromListArray:(NSArray *)rows {
+  NICollectionViewModelSection* section = [NICollectionViewModelSection section];
+  section.rows = [rows isKindOfClass:[NSMutableArray class]] ? rows : [rows mutableCopy];
+  return section;
+}
+
 @end
 
 

@@ -17,6 +17,7 @@
 #import <Foundation/Foundation.h>
 
 #import "NimbusCore.h"
+#import "NIOperations.h"
 #import "NICSSParser.h"
 
 @class NIStylesheet;
@@ -44,7 +45,6 @@ extern NSString* const NIJSONDidChangeNameKey;
 @private
   NIStylesheetCache* _stylesheetCache;
   NSMutableArray* _stylesheetPaths;
-  NSOperationQueue* _queue;
   NSString* _host;
   NSInteger _retryCount;
 }

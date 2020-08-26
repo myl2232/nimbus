@@ -53,6 +53,13 @@
     identifier = [identifier stringByAppendingFormat:@".%@", NSStringFromClass([object class])];
   }
 
+  if ([object respondsToSelector:@selector(reuseIdentifierSuffix)]) {
+    NSString* suffix = [object reuseIdentifierSuffix];
+    if (suffix.length) {
+      identifier = [identifier stringByAppendingFormat:@".%@", suffix];
+    }
+  }
+
   [collectionView registerClass:collectionViewCellClass forCellWithReuseIdentifier:identifier];
 
   cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
@@ -72,6 +79,14 @@
   UICollectionViewCell* cell = nil;
 
   NSString* identifier = NSStringFromClass([object class]);
+
+  if ([object respondsToSelector:@selector(reuseIdentifierSuffix)]) {
+    NSString* suffix = [object reuseIdentifierSuffix];
+    if (suffix.length) {
+      identifier = [identifier stringByAppendingFormat:@".%@", suffix];
+    }
+  }
+
   [collectionView registerNib:collectionViewCellNib forCellWithReuseIdentifier:identifier];
 
   cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
@@ -84,7 +99,7 @@
   return cell;
 }
 
-+ (UICollectionViewCell *)collectionViewModel:(NICollectionViewModel *)collectionViewModel
++ (UICollectionViewCell *)collectionViewModel:(id<NICollectionViewModeling>)collectionViewModel
                         cellForCollectionView:(UICollectionView *)collectionView
                                   atIndexPath:(NSIndexPath *)indexPath
                                    withObject:(id)object {
@@ -129,7 +144,7 @@
   return collectionViewCellClass;
 }
 
-- (UICollectionViewCell *)collectionViewModel:(NICollectionViewModel *)collectionViewModel
+- (UICollectionViewCell *)collectionViewModel:(id<NICollectionViewModeling>)collectionViewModel
                    cellForCollectionView:(UICollectionView *)collectionView
                         atIndexPath:(NSIndexPath *)indexPath
                          withObject:(id)object {
@@ -157,12 +172,12 @@
   [self.objectToCellMap setObject:collectionViewCellClass forKey:(id<NSCopying>)objectClass];
 }
 
-- (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(NICollectionViewModel *)model {
+- (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(id<NICollectionViewModeling>)model {
   id object = [model objectAtIndexPath:indexPath];
   return [self collectionViewCellClassFromObject:object];
 }
 
-+ (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(NICollectionViewModel *)model {
++ (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(id<NICollectionViewModeling>)model {
   id object = [model objectAtIndexPath:indexPath];
   Class collectionViewCellClass = nil;
   if ([object respondsToSelector:@selector(collectionViewCellClass)]) {

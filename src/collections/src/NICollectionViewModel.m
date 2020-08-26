@@ -59,18 +59,23 @@
 
 
 - (void)_resetCompiledData {
-  self.sections = nil;
+  [self _setSectionsWithArray:nil];
   self.sectionIndexTitles = nil;
   self.sectionPrefixToSectionIndex = nil;
+}
+
+- (NICollectionViewModelSection *)_sectionFromListArray:(NSArray *)rows {
+  NICollectionViewModelSection* section = [NICollectionViewModelSection section];
+  section.rows = rows;
+  return section;
 }
 
 - (void)_compileDataWithListArray:(NSArray *)listArray {
   [self _resetCompiledData];
 
   if (nil != listArray) {
-    NICollectionViewModelSection* section = [NICollectionViewModelSection section];
-    section.rows = listArray;
-    self.sections = [NSArray arrayWithObject:section];
+    NICollectionViewModelSection* section = [self _sectionFromListArray:listArray];
+    [self _setSectionsWithArray:@[ section ]];
   }
 }
 
@@ -132,7 +137,11 @@
   currentSectionRows = nil;
 
   // Update the compiled information for this data source.
-  self.sections = sections;
+  [self _setSectionsWithArray:sections];
+}
+
+- (void)_setSectionsWithArray:(NSArray *)sectionsArray {
+  self.sections = sectionsArray;
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -170,6 +179,32 @@
                                   atIndexPath:indexPath];
   }
   return nil;
+}
+
+#pragma mark - UICollectionViewDataSourcePrefetching
+
+- (void)collectionView:(UICollectionView *)collectionView prefetchItemsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths {
+  if (@available(iOS 10.0, *)) {
+    NSMutableArray<id>* objects = [NSMutableArray array];
+    for (NSIndexPath* indexPath in indexPaths) {
+      id object = [self objectAtIndexPath:indexPath];
+      [objects addObject:object];
+    }
+    
+    [self.delegate collectionViewModel:self collectionView:collectionView prefetchItemsAtIndexPaths:indexPaths withObjects:objects];
+  }
+}
+
+- (void)collectionView:(UICollectionView *)collectionView cancelPrefetchingForItemsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths {
+  if (@available(iOS 10.0, *)) {
+    NSMutableArray<id>* objects = [NSMutableArray array];
+    for (NSIndexPath* indexPath in indexPaths) {
+      id object = [self objectAtIndexPath:indexPath];
+      [objects addObject:object];
+    }
+  
+    [self.delegate collectionViewModel:self collectionView:collectionView cancelPrefetchingItemsAtIndexPaths:indexPaths withObjects:objects];
+  }
 }
 
 #pragma mark - Public

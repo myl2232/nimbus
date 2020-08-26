@@ -74,7 +74,8 @@ static NSString* const kPageReuseIdentifier = @"SamplePageIdentifier";
 
   // Create a paging scroll view the same way we would any other type of view.
   self.pagingScrollView = [[NIPagingScrollView alloc] initWithFrame:self.view.bounds];
-  self.pagingScrollView.autoresizingMask = UIViewAutoresizingFlexibleDimensions;
+  self.pagingScrollView.autoresizingMask =
+      (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
 
   // A paging scroll view has a data source much like a UITableView.
   self.pagingScrollView.dataSource = self;
@@ -91,8 +92,8 @@ static NSString* const kPageReuseIdentifier = @"SamplePageIdentifier";
   [super didReceiveMemoryWarning];
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	return NIIsSupportedOrientation(interfaceOrientation);
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+  return NIIsPad() ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskAllButUpsideDown;
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation

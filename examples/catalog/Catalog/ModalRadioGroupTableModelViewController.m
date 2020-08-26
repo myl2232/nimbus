@@ -17,6 +17,7 @@
 #import "ModalRadioGroupTableModelViewController.h"
 
 #import "NimbusModels.h"
+#import "NIRadioGroup.h"
 #import "NimbusCore.h"
 
 //
@@ -82,8 +83,8 @@ typedef enum {
   self.tableView.delegate = [self.radioGroup forwardingTo:self];
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
-  return NIIsSupportedOrientation(toInterfaceOrientation);
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+  return NIIsPad() ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskAllButUpsideDown;
 }
 
 #pragma mark - NIRadioGroupDelegate

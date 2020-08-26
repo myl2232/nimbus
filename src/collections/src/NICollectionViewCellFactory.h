@@ -59,7 +59,7 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
  * the object to a cell it will return nil.
  *
  * @code
-- (UICollectionViewCell *)collectionViewModel:(NICollectionViewModel *)collectionViewModel
+- (UICollectionViewCell *)collectionViewModel:(id<NICollectionViewModeling>)collectionViewModel
                         cellForCollectionView:(UICollectionView *)collectionView
                                   atIndexPath:(NSIndexPath *)indexPath
                                    withObject:(id)object {
@@ -74,7 +74,7 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
 }
  * @endcode
  */
-+ (UICollectionViewCell *)collectionViewModel:(NICollectionViewModel *)collectionViewModel cellForCollectionView:(UICollectionView *)collectionView atIndexPath:(NSIndexPath *)indexPath withObject:(id)object;
++ (UICollectionViewCell *)collectionViewModel:(id<NICollectionViewModeling>)collectionViewModel cellForCollectionView:(UICollectionView *)collectionView atIndexPath:(NSIndexPath *)indexPath withObject:(id)object;
 
 /**
  * Map an object's class to a cell's class.
@@ -94,7 +94,7 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
  * can fetch the cell class and then perform any selectors that are necessary for calculating the
  * dimensions of the cell before it is instantiated.
  */
-- (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(NICollectionViewModel *)model;
+- (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(id<NICollectionViewModeling>)model;
 
 /**
  * Returns the mapped cell class for an object at a given index path.
@@ -103,7 +103,7 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
  * can fetch the cell class and then perform any selectors that are necessary for calculating the
  * dimensions of the cell before it is instantiated.
  */
-+ (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(NICollectionViewModel *)model;
++ (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(id<NICollectionViewModeling>)model;
 
 @end
 
@@ -163,6 +163,27 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
  * objects.
  */
 + (BOOL)shouldAppendObjectClassToReuseIdentifier;
+
+@end
+
+/**
+ * A protocol that objects may conform to in order to provide a custom suffix to the reuse
+ * identifier of its cell.
+ *
+ * This is useful for objects that can support different configurations, such that cells updated
+ * with an instance of the object can be reused only for objects supporting the same configuration.
+ * This can be used as an optimization for objects that support dynamic configurations that would be
+ * inefficient to reset during -prepareForReuse.
+ */
+@protocol NICollectionViewCellReuseIdentifierExtension <NSObject>
+
+/**
+ * A unique reuse identifier suffix to append to the reuse identifier of the cell.
+ *
+ * @note Classes conforming to this protocol may return nil or the empty string to opt out of the
+ * suffix.
+ */
+- (NSString *)reuseIdentifierSuffix;
 
 @end
 

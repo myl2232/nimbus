@@ -50,7 +50,7 @@ extern "C" {
  * - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
  *                                          duration:(NSTimeInterval)duration {
  *   [super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
- * 
+ *
  *   CGRect toolbarFrame = self.toolbar.frame;
  *   toolbarFrame.size.height = NIToolbarHeightForOrientation(toInterfaceOrientation);
  *   toolbarFrame.origin.y = self.view.bounds.size.height - toolbarFrame.size.height;
@@ -62,28 +62,6 @@ extern "C" {
  * @defgroup Common-Metrics Common Metrics
  * @{
  */
-
-#ifndef UIViewAutoresizingFlexibleMargins
-#define UIViewAutoresizingFlexibleMargins (UIViewAutoresizingFlexibleLeftMargin \
-                                           | UIViewAutoresizingFlexibleTopMargin \
-                                           | UIViewAutoresizingFlexibleRightMargin \
-                                           | UIViewAutoresizingFlexibleBottomMargin)
-#endif
-
-#ifndef UIViewAutoresizingFlexibleDimensions
-#define UIViewAutoresizingFlexibleDimensions (UIViewAutoresizingFlexibleWidth \
-                                              | UIViewAutoresizingFlexibleHeight)
-#endif
-
-#ifndef UIViewAutoresizingNavigationBar
-#define UIViewAutoresizingNavigationBar (UIViewAutoresizingFlexibleWidth \
-                                         | UIViewAutoresizingFlexibleBottomMargin)
-#endif
-
-#ifndef UIViewAutoresizingToolbar
-#define UIViewAutoresizingToolbar (UIViewAutoresizingFlexibleWidth \
-                                   | UIViewAutoresizingFlexibleTopMargin)
-#endif
 
 /**
  * The recommended number of points for a minimum tappable area.
@@ -166,7 +144,7 @@ NSTimeInterval NIDeviceRotationDuration(BOOL isFlippingUpsideDown);
 UIEdgeInsets NICellContentPadding(void);
 
 #if defined __cplusplus
-};
+}
 #endif
 
 /**@}*/// End of Common Metrics ///////////////////////////////////////////////////////////////////

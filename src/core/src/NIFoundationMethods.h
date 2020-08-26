@@ -251,7 +251,12 @@ NSComparisonResult NICompareVersionStrings(NSString* string1, NSString* string2)
  * in the query. Otherwise each object in the array with be an NSString corresponding to a value
  * in the query for that parameter.
  */
-NSDictionary* NIQueryDictionaryFromStringUsingEncoding(NSString* string, NSStringEncoding encoding);
+NSDictionary* NIQueryDictionaryFromString(NSString* string);
+
+/**
+ * Deprecated method. Use NIQueryDictionaryFromString instead.
+ */
+NSDictionary* NIQueryDictionaryFromStringUsingEncoding(NSString* string, NSStringEncoding encoding) __NI_DEPRECATED_METHOD; // Use NIQueryDictionaryFromString instead.
 
 /**
  * Returns a string that has been escaped for use as a URL parameter.
@@ -390,11 +395,6 @@ CG_INLINE CGFloat NICGFloatCos(CGFloat x) {
 CGFloat boundf(CGFloat value, CGFloat min, CGFloat max) __NI_DEPRECATED_METHOD; // Use NIBoundf instead. MAINTENANCE: Remove by Feb 28, 2014.
 
 /**
- * Deprecated method. Use NIBoundi instead.
- */
-NSInteger boundi(NSInteger value, NSInteger min, NSInteger max) __NI_DEPRECATED_METHOD; // Use NIBoundi instead. MAINTENANCE: Remove by Feb 28, 2014.
-
-/**
  * Bounds a given value within the min and max values.
  *
  * If max < min then value will be min.
@@ -415,7 +415,7 @@ NSInteger NIBoundi(NSInteger value, NSInteger min, NSInteger max);
 /**@}*/
 
 #if defined __cplusplus
-};
+}
 #endif
 
 /**@}*/// End of Foundation Methods ///////////////////////////////////////////////////////////////

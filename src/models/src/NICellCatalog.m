@@ -161,7 +161,7 @@
 @interface NIDrawRectBlockView : UIView
 @property (nonatomic, copy) NICellDrawRectBlock block;
 @property (nonatomic, strong) id object;
-@property (nonatomic, assign) UITableViewCell* cell;
+@property (nonatomic, weak) UITableViewCell* cell;
 @end
 
 
@@ -192,7 +192,8 @@
     self.selectionStyle = UITableViewCellSelectionStyleNone;
 
     _blockView = [[NIDrawRectBlockView alloc] initWithFrame:self.contentView.bounds];
-    _blockView.autoresizingMask = UIViewAutoresizingFlexibleDimensions;
+    _blockView.autoresizingMask =
+        (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
     _blockView.contentMode = UIViewContentModeRedraw;
     [self.contentView addSubview:_blockView];
 

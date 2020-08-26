@@ -1,0 +1,29 @@
+language: objective-c
+osx_image: xcode8.3
+sudo: false
+env:
+  global:
+  - LC_CTYPE=en_US.UTF-8
+  - LANG=en_US.UTF-8
+  matrix:
+    - DESTINATION="OS=10.3.1,name=iPhone 6s" SDK=iphonesimulator10.3
+    - DESTINATION="OS=9.1,name=iPhone 6s" SDK=iphonesimulator10.3
+    - DESTINATION="OS=9.0,name=iPhone 6 Plus" SDK=iphonesimulator10.3
+before_install:
+  - gem install cocoapods --no-rdoc --no-ri --no-document --quiet
+  - gem install xcpretty --no-rdoc --no-ri --no-document --quiet
+  - git submodule update
+script:
+  - set -o pipefail
+  - xcodebuild -version
+  - xcodebuild -showsdks
+  - xcodebuild -project src/Nimbus.xcodeproj -scheme NimbusAttributedLabel -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -c; 
+  - xcodebuild -project src/Nimbus.xcodeproj -scheme NimbusCore -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -c; 
+  - xcodebuild -project src/Nimbus.xcodeproj -scheme NimbusCss -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -c; 
+  - xcodebuild -project src/Nimbus.xcodeproj -scheme NimbusInterapp -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -c; 
+  - xcodebuild -project src/Nimbus.xcodeproj -scheme NimbusModels -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -c; 
+  - xcodebuild -project src/Nimbus.xcodeproj -scheme NimbusOverview -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -c; 
+  - xcodebuild -project src/Nimbus.xcodeproj -scheme NimbusPagingScrollView -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -c; 
+  - xcodebuild -project src/Nimbus.xcodeproj -scheme NimbusPhotos -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -c; 
+  - xcodebuild -project src/Nimbus.xcodeproj -scheme NimbusWebController -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -c; 
+  

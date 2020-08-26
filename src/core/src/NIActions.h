@@ -140,8 +140,20 @@ extern "C" {
 NIActionBlock NIPushControllerAction(Class controllerClass);
 
 #if defined __cplusplus
-};
+}
 #endif
+
+/** The protocol for a data source that can be used with NIActions. */
+@protocol NIActionsDataSource <NSObject>
+
+/**
+ * The object located at the given indexPath.
+ *
+ * @param indexPath The index path of the requested object.
+ */
+- (id)objectAtIndexPath:(NSIndexPath *)indexPath;
+
+@end
 
 /** @name Creating Table View Actions */
 

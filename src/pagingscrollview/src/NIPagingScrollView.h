@@ -68,8 +68,21 @@ typedef enum {
 
 #pragma mark Configuring Presentation
 
+// Controls the border between pages.
 @property (nonatomic) CGFloat pageMargin;
+// Used to make the view smaller than the frame of the paging scroll view, thus showing
+// neighboring pages, either horizontally or vertically depending on the configuration
+// of the view.
+@property (nonatomic) CGFloat pageInset;
 @property (nonatomic) NIPagingScrollViewType type; // Default: NIPagingScrollViewHorizontal
+// Controls layout for RTL.
+// For iOS versions 9 and higher the initial value is determined based on the semanticContentAttribute property.
+// For previous iOS versions please set this to true for RTL languages to display correctly.
+// RTL is achieved by concatenating UIView transforms.
+// Warning: if you require the transform to not be touched or want to handle RTL yourself, please
+// set this to NO.
+@property (nonatomic) BOOL RTLEnabled
+    NS_DEPRECATED_IOS(2_0, 9_0, "Use the semanticContentAttribute property instead.");
 
 #pragma mark Visible Pages
 

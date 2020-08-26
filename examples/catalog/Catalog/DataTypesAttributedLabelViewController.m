@@ -60,7 +60,7 @@
   NIAttributedLabel* label = [[NIAttributedLabel alloc] initWithFrame:CGRectZero];
   label.numberOfLines = 0;
   label.lineBreakMode = NSLineBreakByWordWrapping;
-  label.autoresizingMask = UIViewAutoresizingFlexibleDimensions;
+  label.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
   label.frame = CGRectInset(self.view.bounds, 20, 20);
   label.font = [UIFont fontWithName:@"Optima-Regular" size:20];
   label.delegate = self;
@@ -97,7 +97,7 @@
 
   } else if (NSTextCheckingTypeAddress == result.resultType) {
     // Open the Maps application or Safari if the maps application isn't installed.
-    url = [NSURL URLWithString:[@"http://maps.google.com/maps?q=" stringByAppendingString:[[result.addressComponents objectForKey:NSTextCheckingStreetKey] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+    url = [NSURL URLWithString:[@"https://maps.google.com/maps?q=" stringByAppendingString:[[result.addressComponents objectForKey:NSTextCheckingStreetKey] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
   }
 
   if (nil != url) {
